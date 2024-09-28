@@ -19,3 +19,15 @@ void Entity_move_to_face(Entity* ent) {
 
 void Entity_move_to_point(Entity* ent) {
 }
+
+Rectangle Entity_get_rect_from_boundingbox(Entity ent) {
+	Vector2 	pos = ent.position;
+	Rectangle	bb	= ent.bounding_box[0];
+	Rectangle rec = {
+		.x = pos.x,
+		.y = pos.y,
+		.width 	= fabs(bb.x) + bb.width,
+		.height = fabs(bb.y) + bb.height,
+	};
+	return rec;
+}

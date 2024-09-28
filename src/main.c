@@ -57,13 +57,24 @@ int main(void) {
 	);
 
 	Entity player = { 
-		.position = {400, 400},
+		.properties = {
+			.hp = 1100,
+			.def = 10 ,
+			.shl = 0,
+		},
+		.position = {100, 100},
 		.move_type = EMove_face,
 		.bounding_box = {-10,-10,10,10},
 	};
 
 	Entity enemy = { 
-		.position = {100, 100},
+	
+		.properties = {
+			.hp = 21100,
+			.def = 25,
+			.shl = 0,
+		},
+		.position = {0, 0},
 		.bounding_box = {-20,-20,20,20},
 	};
 
@@ -90,6 +101,12 @@ int main(void) {
 				control_scheme
 		);
 		
+		if (IsKeyPressed(KEY_EQUAL)) {
+			game_view.camera.zoom += 0.5;
+		} else if (IsKeyPressed(KEY_MINUS)) {
+			game_view.camera.zoom -= 0.5;
+		}
+
 		BeginDrawing();
 		Viewport_update(&game_view,&game_ctx);
 		GameRenderer_render(&game_ctx,&game_gfx, &game_view);
@@ -97,8 +114,11 @@ int main(void) {
 		EndDrawing();
 	}
 	CloseWindow();
+	
 	game_ctx.should_update = false;
 	pthread_exit(&update_thread_id);
+	
 	GameContext_deinit(&game_ctx);
+	
 	return 0;
 }

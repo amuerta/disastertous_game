@@ -60,10 +60,98 @@ void GameContext_handle_controls(GameContext* const game) {
 
 }
 
-// TODO: make both proc work at 100% freq only for entites 
-// within screen space
+static void projectRectangleOntoAxis(Vector2* vertices, Vector2 axis, float* min, float* max) {
+    *min = Vector2DotProduct(vertices[0], axis);
+    *max = *min;
 
-// NOTE: possible slow performance
+    for (int i = 1; i < 4; i++) {
+        float projection = Vector2DotProduct(vertices[i], axis);
+        if (projection < *min) *min = projection;
+        if (projection > *max) *max = projection;
+    }
+}
+
+static bool overlapOnAxis(Vector2* verticesA, Vector2* verticesB, Vector2 axis) {
+    float minA, maxA, minB, maxB;
+
+    projectRectangleOntoAxis(verticesA, axis, &minA, &maxA);
+    projectRectangleOntoAxis(verticesB, axis, &minB, &maxB);
+
+    return !(maxA < minB || maxB < minA);
+}
+
+static bool SATCheck(Vector2* verticesA, Vector2* verticesB) {
+
+    Vector2 axes[8] = {
+        Vector2Subtract(verticesA[0], verticesA[1]), 
+        Vector2Subtract(verticesA[1], verticesA[3]), 
+        Vector2Subtract(verticesA[3], verticesA[2]), 
+        Vector2Subtract(verticesA[2], verticesA[0]), 
+        Vector2Subtract(verticesB[0], verticesB[1]), 
+        Vector2Subtract(verticesB[1], verticesB[3]), 
+        Vector2Subtract(verticesB[3], verticesB[2]), 
+        Vector2Subtract(verticesB[2], verticesB[0])  
+    };
+
+    for (int i = 0; i < 8; i++) {
+        if (!overlapOnAxis(verticesA, verticesB, axes[i])) {
+            return false;  
+		}
+	}
+	return true;  
+}
+
+// TODO: make all procedures work at 100% freq only for entites 
+// within screen space, for every other one, update lazily dependeing
+// on distance, is_being_viewed, of other factors.
+
+// NOTE: slow performance
+
+void GameContext_check_for_bb_collision(GameContext* const game) {
+	for(uint i = 0; i < game->entites_count; i++) {
+		for(uint o = 0; o < game->entites_count; o++) {
+			Entity *target, *other;
+			Rectangle rec1, rec2;
+			Vector2 vertecies[2][4] = {0};
+
+			if (i==o)
+				continue;
+
+			target 	= &game->entites[i];
+			other	= &game->entites[o];
+
+			rec1 = Entity_get_rect_from_boundingbox(*target); 
+			rec2 = Entity_get_rect_from_boundingbox(*other); 
+
+			GetRotatedRectanglePointsStorage(
+					vertecies[0],
+					rec1,
+					target->position,
+					target->rotation_angle / RADIAN_DEG_RATIO
+				);
+
+			GetRotatedRectanglePointsStorage(
+					vertecies[1],
+					rec2,
+					other->position,
+					other->rotation_angle / RADIAN_DEG_RATIO
+				);
+			
+
+			printf("Vertecies for rec1: (%.1f,%.1f), (%.1f,%.1f), (%.1f,%.1f), (%.1f,%.1f)\n",
+					vertecies[0][0].x, vertecies[0][0].y,
+					vertecies[0][1].x, vertecies[0][1].y,
+					vertecies[0][2].x, vertecies[0][2].y,
+					vertecies[0][3].x, vertecies[0][3].y
+			);
+
+			bool collide = SATCheck(vertecies[0],vertecies[1]);
+
+			target->is_clipping = collide;
+			other->is_clipping = collide;
+		}
+	}
+}
 
 
 void GameContext_update_position(GameContext* const game) {

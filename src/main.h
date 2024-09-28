@@ -30,10 +30,11 @@
 #define MILLISECONDS 1000
 #define UPS 30
 #define MAX_BB_COUNT  32
+#define MAX_HB_COUNT  32
 #define MAX_SBN_COUNT 16
 #define MAX_ENT_FLAGS 64
 #define DEFAULT_ENT_COUNT 256
-#define RADIAN_DEG_RATIO 0.0174
+#define RADIAN_DEG_RATIO 0.01745329
 
 // types
 
@@ -71,25 +72,33 @@ typedef struct {
 } Flag;
 
 typedef struct {
-	multiplier acceleration;
-	multiplier coll_recoil;
-	multiplier mass;
-	multiplier dash_vel_mul;
-
+	float 	   	hp;
+	float 		def;
+	float 		shl;
+	multiplier 	acceleration;
+	multiplier 	collision_recoil;
+	multiplier 	mass;
+	multiplier 	dash_vel_mul;
 } Stats;
 
 typedef struct Entity {
-	byte			valid; // if 0, then entity is unitilized
-	MoveScheme 		move_type;
-	float			rotation_angle;
+
+	// if 0, then entity is unitilized
+	byte			valid				;
+	uint			unique_id			;
+	MoveScheme 		move_type			;
+	float			rotation_angle		;
+	bool			is_clipping			;
 	Vector2 	
 				position,
 				velocity,
 				acceleration,
 				move_destenation
-				;
+			;
+	Stats			properties						;
 	Flag			flags[MAX_ENT_FLAGS]			;
 	Rectangle 		bounding_box	[MAX_BB_COUNT]	;
+	Rectangle 		hitbox			[MAX_HB_COUNT]	;
 	struct Entity* 	subnodules	[MAX_SBN_COUNT]		;
 } Entity;
 

@@ -3,6 +3,7 @@
 void update(GameContext* const game) {
 	GameUpdateProc game_systems[] = {
 		GameContext_handle_controls,
+		GameContext_check_for_bb_collision,
 		GameContext_update_velocity,
 		GameContext_apply_drag,
 		GameContext_update_position,
